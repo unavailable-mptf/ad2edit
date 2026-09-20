@@ -1,8 +1,9 @@
 name: release
 
-# Pushing a tag like v0.1.0 builds both programs on Windows, zips them with
-# the licence, and attaches the zip and its checksum to a
-# GitHub release, with an attestation that ties the files to this commit.
+# Publishing a release (or pushing a tag like v1.0.0) builds both programs on
+# Windows and attaches the two exes and their checksums to that release, with
+# an attestation that ties the files to this commit. The release's own text
+# is left alone.
 
 on:
   push:
@@ -24,22 +25,19 @@ jobs:
         run: cargo test --no-default-features
       - name: Build
         run: cargo build --release --features gui
-      - name: Package
+      - name: Checksums
         shell: pwsh
         run: |
-          $name = "ad2edit-${{ github.ref_name }}-windows"
-          New-Item -ItemType Directory $name | Out-Null
-          Copy-Item target/release/ad2edit.exe, target/release/ad2read.exe $name
-          if (Test-Path LICENSE) { Copy-Item LICENSE $name }
-          Compress-Archive -Path $name -DestinationPath "$name.zip"
-          (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower() + "  $name.zip" | Out-File SHA256SUMS.txt -Encoding ascii
+          Copy-Item target/release/ad2edit.exe, target/release/ad2read.exe .
+          Get-ChildItem ad2edit.exe, ad2read.exe | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + "  " + $_.Name } | Out-File SHA256SUMS.txt -Encoding ascii
       - uses: actions/attest-build-provenance@v2
         with:
-          subject-path: "ad2edit-*-windows.zip"
+          subject-path: |
+            ad2edit.exe
+            ad2read.exe
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            ad2edit-*-windows.zip
+            ad2edit.exe
+            ad2read.exe
             SHA256SUMS.txt
-          body: |
-            Windows will warn that this program is from an unknown publisher, because it is not code-signed: choose More info, then Run anyway. SHA256SUMS.txt lets you check the download is the file built here.
