@@ -27,7 +27,7 @@ cargo build --release --features gui
 
 The programs end up in `target/release`.
 
-*Cargo warns that some packages will not be available in later unspecified versions
+*Cargo warns that some packages will not be available in later unspecified versions (im too lazy to check)
 
 ## Status
 
