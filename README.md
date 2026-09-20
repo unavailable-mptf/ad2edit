@@ -1,8 +1,8 @@
 # ad2edit
 
-An editor for Garry's Mod [AdvDupe2](https://github.com/wiremod/advdupe2) dupes. I made it to build [ACF-3](https://github.com/ACF-Team/ACF-3) tanks and Wiremod contraptions without sitting in the game to do it.
+An editor for Garry's Mod [AdvDupe2](https://github.com/wiremod/advdupe2) dupes designed to build [ACF-3](https://github.com/ACF-Team/ACF-3) tanks (and Wiremod contraptions) without you having to boot and use gmod.
 
-There are two programs. `ad2edit` is the editor, with a 3D view that draws the real models from your game files. `ad2read` does the same jobs from the command line.
+There are two programs. `ad2edit` is the editor, a s. `ad2read` does the same job from the command line (dont use unless insane and determined).
 
 ## What it does
 
@@ -15,21 +15,23 @@ There are two programs. `ad2edit` is the editor, with a 3D view that draws the r
 
 ## What you need
 
-Windows and a Garry's Mod install. The editor reads models from the game and from your workshop addons. None of that content is included here.
+Garry's Mod. The editor reads models from the game and from your workshop addons. None of that content is included with the program.
 
-## Build it
+## IF you want to build it
 
-You need [Rust](https://rustup.rs) 1.95 or newer.
+You need [Rust](https://rustup.rs) 1.95 or newer*.
 
 ```
 cargo build --release --features gui
 ```
 
-The programs end up in `target/release`. Run the tests with `cargo test --no-default-features`.
+The programs end up in `target/release`.
+
+*Cargo warns that some packages will not be available in later unspecified versions
 
 ## Status
 
-It works on my machine with my dupes and my addon versions. Pasting what it builds hasn't had much testing in game yet, so keep backups.
+It works on my machine with dupes made on the latest version of ACF-3 (as of writing this) and earlier.
 
 ## Licence
 
