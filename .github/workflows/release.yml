@@ -28,16 +28,17 @@ jobs:
       - name: Checksums
         shell: pwsh
         run: |
-          Copy-Item target/release/ad2edit.exe, target/release/ad2read.exe .
-          Get-ChildItem ad2edit.exe, ad2read.exe | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + "  " + $_.Name } | Out-File SHA256SUMS.txt -Encoding ascii
+          Copy-Item target/release/ad2edit.exe AD2Edit.exe
+          Copy-Item target/release/ad2read.exe AD2Read.exe
+          Get-ChildItem AD2Edit.exe, AD2Read.exe | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + "  " + $_.Name } | Out-File SHA256SUMS.txt -Encoding ascii
       - uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
-            ad2edit.exe
-            ad2read.exe
+            AD2Edit.exe
+            AD2Read.exe
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            ad2edit.exe
-            ad2read.exe
+            AD2Edit.exe
+            AD2Read.exe
             SHA256SUMS.txt
