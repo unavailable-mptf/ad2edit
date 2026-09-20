@@ -1054,8 +1054,35 @@ pub fn spawn_catalog(dupe: &mut Dupe, item: &crate::catalog::Item, at: Vec3, ang
         }
         "acf_controller" => {
             let dt = dupe.new_table();
-            dupe.set(dt, "BrakeEngagement", Value::Number(1.0));
-            dupe.set(dt, "BrakeStrength", Value::Number(300.0));
+            for (key, value) in [
+                ("BrakeEngagement", 1.0),
+                ("BrakeStrength", 300.0),
+                ("SmokeFuse", 0.5),
+                ("ZoomSpeed", 10.0),
+                ("ZoomMin", 5.0),
+                ("ZoomMax", 90.0),
+                ("SlewMin", 1.0),
+                ("SlewMax", 1.0),
+                ("CamCount", 2.0),
+                ("Cam1Orbit", 300.0),
+                ("Cam2Orbit", 0.0),
+                ("Cam3Orbit", 0.0),
+                ("HUDType", 1.0),
+                ("HUDScale", 1.0),
+                ("SpeedTop", 60.0),
+                ("ShiftTime", 100.0),
+            ] {
+                dupe.set(dt, key, Value::Number(value));
+            }
+            for (key, x, y, z) in [
+                ("Cam1Offset", 0.0, 0.0, 150.0),
+                ("Cam2Offset", 0.0, 0.0, 150.0),
+                ("Cam3Offset", 0.0, 0.0, 0.0),
+                ("HUDColor", 1.0, 0.5, 0.0),
+                ("HUDColor2", 1.0, 0.5, 0.0),
+            ] {
+                dupe.set(dt, key, Value::Vector(x, y, z));
+            }
             dupe.set(et, "DT", Value::Table(dt));
         }
         _ => {}
