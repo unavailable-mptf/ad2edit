@@ -2,7 +2,7 @@
 
 An editor for Garry's Mod [AdvDupe2](https://github.com/wiremod/advdupe2) dupes designed to build [ACF-3](https://github.com/ACF-Team/ACF-3) tanks (and Wiremod contraptions) without you having to boot and use gmod.
 
-There are two programs. `ad2edit` is the editor, a s. `ad2read` does the same job from the command line (dont use unless insane and determined).
+There are two programs. `ad2edit` is a gui editor program. `ad2read` does the same job from the command line (dont use unless insane and determined).
 
 ## What it does
 
