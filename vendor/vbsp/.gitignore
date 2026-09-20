@@ -1,0 +1,7 @@
+target
+*.bench
+*.obj
+result
+.direnv
+*.log
+*.vmf

@@ -1,0 +1,98 @@
+<!doctype html>
+<!-- The ad2edit icon, drawn from numbers so every size comes from one
+     description. The outline is traced from the 48-pixel Half-Life 2 icon
+     the owner supplied: a dark backing that is a circle (centre 20,21 radius
+     20 on that icon's grid) joined to a rounded corner at the top right, and
+     a disc of radius 16 on the same centre. In place of the lambda, "AD"; in
+     place of the "2" in the corner, the "e" of ad2edit. #aa3b3b and #101010.
+     Open it in a browser with Ethnocentric Regular installed; window.icons
+     holds a PNG data URL per size. ?style=ring draws the disc as a ring with
+     the letters in red instead. -->
+<meta charset="utf-8">
+<title>ad2edit icon</title>
+<body style="background:#444;margin:16px;font:13px sans-serif;color:#eee">
+<div id="out"></div>
+<script>
+const RED = "#aa3b3b", DARK = "#101010";
+const SIZES = [16, 24, 32, 48, 64, 128, 256];
+const FONT = '"Ethnocentric Regular", "Ethnocentric Rg", "Ethnocentric"';
+const RING = new URLSearchParams(location.search).get("style") === "ring";
+
+// The backing's outline: the hull of the big circle and the corner's two.
+const CIRCLES = [[20, 21, 20], [42, 5, 4], [42, 12, 4]];
+function hull(points) {
+  points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = list => {
+    const out = [];
+    for (const p of list) {
+      while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], p) <= 0) out.pop();
+      out.push(p);
+    }
+    out.pop();
+    return out;
+  };
+  return half(points).concat(half(points.slice().reverse()));
+}
+const OUTLINE = hull(CIRCLES.flatMap(([x, y, r]) => Array.from({length: 180}, (_, n) => [x + r * Math.cos(n * Math.PI / 90), y + r * Math.sin(n * Math.PI / 90)])));
+
+function draw(size, ring) {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const c = canvas.getContext("2d");
+  // The traced shape is 46 wide and 40 high; centre it in the square.
+  const s = size * 0.97 / 46;
+  c.translate((size - 46 * s) / 2, (size - 40 * s) / 2 - 1 * s);
+  c.scale(s, s);
+
+  c.fillStyle = DARK;
+  c.beginPath();
+  OUTLINE.forEach(([x, y], n) => (n ? c.lineTo(x, y) : c.moveTo(x, y)));
+  c.closePath();
+  c.fill();
+
+  c.beginPath();
+  c.arc(20, 21, ring ? 14.6 : 16, 0, Math.PI * 2);
+  if (ring) {
+    c.strokeStyle = RED;
+    c.lineWidth = 2.8;
+    c.stroke();
+  } else {
+    c.fillStyle = RED;
+    c.fill();
+  }
+
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+  const fitted = (text, px, width) => {
+    c.font = `${px}px ${FONT}`;
+    const wide = c.measureText(text).width;
+    return wide > width ? px * width / wide : px;
+  };
+  c.font = `${fitted("AD", 14, ring ? 22 : 25)}px ${FONT}`;
+  c.fillStyle = ring ? RED : DARK;
+  c.fillText("AD", 20, 21.4);
+
+  c.font = `${size <= 24 ? 8.5 : 7.6}px ${FONT}`;
+  c.fillStyle = RED;
+  c.fillText("e", 40.6, 8.6);
+  return canvas;
+}
+
+window.icons = {};
+document.fonts.load(`32px ${FONT}`).then(() => {
+  const out = document.getElementById("out");
+  for (const ring of [RING, !RING]) {
+    for (const size of SIZES.concat(ring === RING ? [] : [])) {
+      const canvas = draw(size, ring);
+      if (ring === RING) window.icons[size] = canvas.toDataURL("image/png");
+      const shown = document.createElement("span");
+      shown.style.cssText = "display:inline-block;margin:8px;vertical-align:bottom;text-align:center";
+      shown.append(canvas, document.createElement("br"), String(size));
+      out.append(shown);
+    }
+    out.append(document.createElement("br"));
+  }
+  window.iconsReady = true;
+});
+</script>

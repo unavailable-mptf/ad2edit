@@ -1,0 +1,45 @@
+name: release
+
+# Pushing a tag like v0.1.0 builds both programs on Windows, zips them with
+# the licence, and attaches the zip and its checksum to a
+# GitHub release, with an attestation that ties the files to this commit.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Test
+        run: cargo test --no-default-features
+      - name: Build
+        run: cargo build --release --features gui
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = "ad2edit-${{ github.ref_name }}-windows"
+          New-Item -ItemType Directory $name | Out-Null
+          Copy-Item target/release/ad2edit.exe, target/release/ad2read.exe $name
+          if (Test-Path LICENSE) { Copy-Item LICENSE $name }
+          Compress-Archive -Path $name -DestinationPath "$name.zip"
+          (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower() + "  $name.zip" | Out-File SHA256SUMS.txt -Encoding ascii
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "ad2edit-*-windows.zip"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ad2edit-*-windows.zip
+            SHA256SUMS.txt
+          body: |
+            Windows will warn that this program is from an unknown publisher, because it is not code-signed: choose More info, then Run anyway. SHA256SUMS.txt lets you check the download is the file built here.

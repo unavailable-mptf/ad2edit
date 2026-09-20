@@ -1,0 +1,85 @@
+[package]
+name = "ad2read"
+version = "0.1.0"
+edition = "2021"
+description = "An editor for Garry's Mod AdvDupe2 dupes, for building ACF-3 and Wiremod contraptions outside the game"
+license = "GPL-3.0-only"
+repository = "https://github.com/unavailable-mptf/ad2edit"
+# Not a crates.io package: it patches two of its dependencies.
+publish = false
+# Both binaries are declared explicitly below.
+autobins = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+serde_json = "1"
+# The maintained fork of xz2. "static" makes it compile liblzma from bundled
+# C source and link it in, so the .exe doesn't need any DLLs at runtime.
+liblzma = { version = "0.4.8", features = ["static"] }
+
+# Model bounds. vmdl parses the MDL header (MSRV 1.70); vpk reads Valve paks.
+# GMA is handled in-crate — the format is a dozen fields and pulling a whole
+# addon-manager crate for it would be worse.
+vmdl = "0.2"
+# source-vpk: seek-based, bounds-checked, prepends preload bytes (small VMTs
+# live entirely in the directory's preload; a reader that skips it returns
+# them empty), multi-part aware, zero dependencies.
+source-vpk = "0.1"
+# VTF decoding for model textures.
+vtf = "0.4"
+# Source BSP maps as a backdrop.
+vbsp = "0.9"
+# GPU renderer. Only wgpu — kept independent of the UI stack so it can be
+# compiled and checked without egui in the way.
+wgpu = "30"
+bytemuck = { version = "1", features = ["derive"] }
+
+# GUI only. egui is used through eframe's re-export rather than as its own
+# dependency, so the two can never drift to mismatched versions.
+# eframe 0.36 already defaults to the wgpu renderer, which is what exposes a
+# Device and Queue via Frame::wgpu_render_state — no feature juggling needed.
+eframe = { version = "0.36", optional = true }
+rfd = { version = "0.17", optional = true }
+# Reads the gallery's thumbnails back; already in the tree through eframe.
+png = { version = "0.18", optional = true }
+# --console: everything eframe/wgpu/winit log, at trace level.
+log = "0.4"
+env_logger = { version = "0.11", optional = true }
+
+# The viewport rasterises meshes on the CPU. Unoptimised debug builds make
+# that unusable, and `cargo run` is a debug build, so lift the optimisation
+# level for dev without giving up debug info.
+[profile.dev]
+opt-level = 2
+# Line tables only. Full debug info for wgpu + vbsp + vmdl at opt-level 2
+# overflows MSVC's PDB size limit (LNK1318 LIMIT). Backtraces still get line
+# numbers; only variable-level debugging in a debugger is lost.
+debug = 1
+
+# And none at all for dependencies — nobody steps through wgpu's internals
+# from this project, and it's most of the symbol volume.
+[profile.dev.package."*"]
+debug = false
+
+[features]
+default = ["gui"]
+gui = ["dep:eframe", "dep:rfd", "dep:env_logger", "dep:png"]
+
+# The CLI needs none of the windowing stack, so it stays buildable with
+# --no-default-features.
+[[bin]]
+name = "ad2read"
+path = "src/bin/ad2read.rs"
+
+[[bin]]
+name = "ad2edit"
+path = "src/bin/ad2edit.rs"
+required-features = ["gui"]
+
+# vmdl 0.2 refuses any model whose name bytes are not UTF-8; workshop models
+# break that (ACF's 20mmrac). Vendored with lossy decoding at both sites.
+[patch.crates-io]
+vmdl = { path = "vendor/vmdl" }
+# vbsp 0.9.1 with Packfile::names() for case-insensitive pak lookups.
+vbsp = { path = "vendor/vbsp" }
