@@ -7,7 +7,14 @@ name: release
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["*"]
+  # For a release that already exists: Actions, release, Run workflow, and
+  # give its tag.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The tag of the release to attach the programs to
+        required: true
 
 permissions:
   contents: write
@@ -19,6 +26,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Test
@@ -31,13 +40,16 @@ jobs:
           Copy-Item target/release/ad2edit.exe AD2Edit.exe
           Copy-Item target/release/ad2read.exe AD2Read.exe
           Get-ChildItem AD2Edit.exe, AD2Read.exe | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + "  " + $_.Name } | Out-File SHA256SUMS.txt -Encoding ascii
+      # Attestations need a public repository; a private one skips this.
       - uses: actions/attest-build-provenance@v2
+        continue-on-error: true
         with:
           subject-path: |
             AD2Edit.exe
             AD2Read.exe
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
             AD2Edit.exe
             AD2Read.exe
